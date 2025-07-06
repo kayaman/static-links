@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Links Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0330f9 0%, #122954 100%);
+            min-height: 100vh;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .category-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            transition: all 0.3s ease;
+        }
+
+        .category-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+        }
+
+        .links-list {
+            list-style: none;
+        }
+
+        .link-item {
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .link-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .link-item a {
+            display: block;
+            text-decoration: none;
+            color: #4a5568;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .link-item a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(4px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .link-item.hidden {
+            display: none;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #a0aec0;
+            font-style: italic;
+            padding: 2rem;
+            display: none;
+        }
+
+        .stats {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Work Links Dashboard</h1>
+            <p>Your essential work resources, organized and ready</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="🔍 Search your links...">
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        
+        <div class="categories-grid" id="categoriesContainer">
+            <!-- Categories will be loaded here -->
+        </div>
+
+        <div class="no-results" id="noResults">
+            No links found matching your search.
+        </div>
+    </div>
+
+    <script>
+        let linksData = [];
+        
+        // Category icons mapping
+        const categoryIcons = {
+            'Development': '💻',
+            'Design': '🎨',
+            'Documentation': '📚',
+            'Tools': '🛠️',
+            'Communication': '💬',
+            'Analytics': '📊',
+            'Project Management': '📋',
+            'Research': '🔍',
+            'Admin': '⚙️',
+            'Learning': '🎓'
+        };
+        // Add Link Form (collapsible)
+        function createAddLinkForm() {
+            const formContainer = document.createElement('div');
+            formContainer.style.marginBottom = '2rem';
+
+            formContainer.innerHTML = `
+            <button id="toggleAddLinkForm" style="
+                background: #667eea;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                margin-bottom: 1rem;
+                box-shadow: 0 2px 8px rgba(102,126,234,0.15);
+                transition: background 0.2s;
+            ">➕ Add Link</button>
+            <form id="addLinkForm" style="display:none; background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 1rem;">
+                <div style="margin-bottom: 1rem;">
+                <input type="text" id="newTitle" placeholder="Title" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
+                <input type="url" id="newUrl" placeholder="URL" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
+                <select id="newCategory" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <option value="">Select Category</option>
+                    ${Object.keys(categoryIcons).map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                </select>
+                </div>
+                <button type="submit" style="
+                background: #764ba2;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(118,75,162,0.10);
+                transition: background 0.2s;
+                ">Add</button>
+            </form>
+            `;
+            return formContainer;
+        }
+
+        // Insert the form at the top of the container
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.querySelector('.container');
+            const form = createAddLinkForm();
+            container.insertBefore(form, container.firstChild);
+
+            // Toggle form visibility
+            const toggleBtn = document.getElementById('toggleAddLinkForm');
+            const addForm = document.getElementById('addLinkForm');
+            toggleBtn.addEventListener('click', () => {
+            addForm.style.display = addForm.style.display === 'none' ? 'block' : 'none';
+            });
+
+            // Handle form submission
+            addForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('newTitle').value.trim();
+            const url = document.getElementById('newUrl').value.trim();
+            const category = document.getElementById('newCategory').value;
+
+            if (!title || !url || !category) return;
+
+            linksData.push({ title, url, category });
+            renderCategories();
+
+            addForm.reset();
+            addForm.style.display = 'none';
+            });
+        });
+        async function loadLinks() {
+            try {
+                linksData = [
+
+                    { "title": "Notion Docs", "url": "https://notion.so", "category": "Documentation" },
+                    { "title": "Slack", "url": "https://slack.com", "category": "Communication" }
+                ];
+                renderCategories();
+            } catch (error) {
+                console.error('Error loading links:', error);
+                showError('Failed to load links. Make sure the links.json file is in the same directory as this HTML file.');
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            const categories = [...new Set(linksData.map(link => link.category))].sort();
+            
+            container.innerHTML = '';
+            
+            categories.forEach(category => {
+                const categoryLinks = linksData.filter(link => link.category === category);
+                const categorySection = createCategorySection(category, categoryLinks);
+                container.appendChild(categorySection);
+            });
+        }
+
+        function createCategorySection(category, links) {
+            const section = document.createElement('div');
+            section.className = 'category-section';
+            section.setAttribute('data-category', category);
+            
+            const icon = categoryIcons[category] || '🔗';
+            
+            section.innerHTML = `
+                <h2 class="category-title">
+                    <span class="category-icon">${icon}</span>
+                    ${category}
+                </h2>
+                <ul class="links-list">
+                    ${links.map(link => `
+                        <li class="link-item" data-title="${link.title.toLowerCase()}" data-url="${link.url.toLowerCase()}">
+                            <a href="${link.url}" target="_blank" rel="noopener noreferrer">
+                                ${link.title}
+                            </a>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            
+            return section;
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const noResults = document.getElementById('noResults');
+            
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const linkItems = document.querySelectorAll('.link-item');
+                const categorySection = document.querySelectorAll('.category-section');
+                let hasVisibleResults = false;
+                
+                // Reset all items
+                linkItems.forEach(item => {
+                    item.classList.remove('hidden');
+                });
+                
+                if (searchTerm) {
+                    linkItems.forEach(item => {
+                        const title = item.getAttribute('data-title');
+                        const url = item.getAttribute('data-url');
+                        
+                        if (!title.includes(searchTerm) && !url.includes(searchTerm)) {
+                            item.classList.add('hidden');
+                        } else {
+                            hasVisibleResults = true;
+                        }
+                    });
+                    
+                    // Hide empty categories
+                    categorySection.forEach(section => {
+                        const visibleLinks = section.querySelectorAll('.link-item:not(.hidden)');
+                        if (visibleLinks.length === 0) {
+                            section.style.display = 'none';
+                        } else {
+                            section.style.display = 'block';
+                        }
+                    });
+                } else {
+                    // Show all categories when search is empty
+                    categorySection.forEach(section => {
+                        section.style.display = 'block';
+                    });
+                    hasVisibleResults = true;
+                }
+                
+                // Show/hide no results message
+                noResults.style.display = hasVisibleResults ? 'none' : 'block';
+            });
+        }
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLinks();
+            setupSearch();
+        });
+    </script>
+</body>
+</html>
