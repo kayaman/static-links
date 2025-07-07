@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Work Links Dashboard</title>
     <style>
+        :root {
+            --delft-blue: #1d2f6f;
+            --vista-blue: #8390fa;
+            --saffron: #fac748;
+            --lavender-blush: #f9e9ec;
+            --tickle-me-pink: #f88dad;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,9 +21,9 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #0330f9 0%, #122954 100%);
+            background: #eaf2d7;
             min-height: 100vh;
-            color: #2d3748;
+            color: var(--delft-blue);
             line-height: 1.6;
         }
 
@@ -31,15 +39,19 @@
         }
 
         .header h1 {
-            color: white;
+            color: var(--delft-blue);
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
         }
 
         .header p {
-            color: rgba(255,255,255,0.9);
+            color: #555;
             font-size: 1.1rem;
         }
 
@@ -50,19 +62,20 @@
 
         .search-box {
             width: 100%;
-            max-width: 500px;
             padding: 1rem 1.5rem;
             font-size: 1rem;
-            border: none;
+            border: 1px solid var(--vista-blue);
             border-radius: 50px;
             background: white;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            color: var(--delft-blue);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             outline: none;
             transition: all 0.3s ease;
         }
 
         .search-box:focus {
-            box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 0 15px rgba(131, 144, 250, 0.5);
+            border-color: var(--tickle-me-pink);
             transform: translateY(-1px);
         }
 
@@ -74,24 +87,26 @@
 
         .category-section {
             background: white;
-            border-radius: 16px;
+            border-radius: 8px;
             padding: 1.5rem;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
+            border: 1px solid var(--vista-blue);
         }
 
         .category-section:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            border-color: var(--tickle-me-pink);
         }
 
         .category-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: #4a5568;
+            color: var(--saffron);
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
-            border-bottom: 3px solid #e2e8f0;
+            border-bottom: 2px solid var(--vista-blue);
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -100,7 +115,9 @@
         .category-icon {
             width: 24px;
             height: 24px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .links-list {
@@ -119,20 +136,21 @@
         .link-item a {
             display: block;
             text-decoration: none;
-            color: #4a5568;
+            color: var(--delft-blue);
             padding: 0.75rem 1rem;
-            border-radius: 8px;
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: #fff;
+            border: 1px solid var(--vista-blue);
             transition: all 0.2s ease;
             font-weight: 500;
         }
 
         .link-item a:hover {
-            background: #667eea;
-            color: white;
+            background: var(--tickle-me-pink);
+            color: var(--delft-blue);
             transform: translateX(4px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 15px rgba(248, 141, 173, 0.4);
+            border-color: var(--tickle-me-pink);
         }
 
         .link-item.hidden {
@@ -141,20 +159,21 @@
 
         .no-results {
             text-align: center;
-            color: #a0aec0;
+            color: #888;
             font-style: italic;
             padding: 2rem;
             display: none;
         }
 
         .stats {
-            background: rgba(255,255,255,0.1);
-            color: white;
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--delft-blue);
             padding: 1rem;
             border-radius: 12px;
             margin-bottom: 2rem;
             text-align: center;
             backdrop-filter: blur(10px);
+            border: 1px solid var(--vista-blue);
         }
 
         .stats-grid {
@@ -193,12 +212,13 @@
         }
 
         .error-message {
-            background: #fed7d7;
-            color: #c53030;
+            background: rgba(248, 141, 173, 0.2);
+            color: #721c24;
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 2rem;
             text-align: center;
+            border: 1px solid var(--tickle-me-pink);
         }
     </style>
 </head>
@@ -226,7 +246,8 @@
 
     <script>
         let linksData = [];
-        
+        const LINKS_STORAGE_KEY = 'workLinksDashboard';
+
         // Category icons mapping
         const categoryIcons = {
             'Development': '💻',
@@ -240,44 +261,47 @@
             'Admin': '⚙️',
             'Learning': '🎓'
         };
+
         // Add Link Form (collapsible)
         function createAddLinkForm() {
             const formContainer = document.createElement('div');
             formContainer.style.marginBottom = '2rem';
 
             formContainer.innerHTML = `
-            <button id="toggleAddLinkForm" style="
-                background: #667eea;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 0.75rem 1.5rem;
-                font-size: 1rem;
-                font-weight: 600;
-                cursor: pointer;
-                margin-bottom: 1rem;
-                box-shadow: 0 2px 8px rgba(102,126,234,0.15);
-                transition: background 0.2s;
-            ">➕ Add Link</button>
-            <form id="addLinkForm" style="display:none; background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 1rem;">
+            <div style="text-align: right;">
+                <button id="toggleAddLinkForm" style="
+                    background: var(--vista-blue);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 0.75rem 1.5rem;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    margin-bottom: 1rem;
+                    box-shadow: 0 2px 8px rgba(131, 144, 250, 0.4);
+                    transition: background 0.2s;
+                ">➕ Add Link</button>
+            </div>
+            <form id="addLinkForm" style="display:none; background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 1rem; border: 1px solid var(--vista-blue);">
                 <div style="margin-bottom: 1rem;">
-                <input type="text" id="newTitle" placeholder="Title" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
-                <input type="url" id="newUrl" placeholder="URL" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 0.5rem;">
-                <select id="newCategory" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <input type="text" id="newTitle" placeholder="Title" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--vista-blue); margin-bottom: 0.5rem; background: #fff; color: var(--delft-blue);">
+                <input type="url" id="newUrl" placeholder="URL" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--vista-blue); margin-bottom: 0.5rem; background: #fff; color: var(--delft-blue);">
+                <select id="newCategory" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--vista-blue); background: #fff; color: var(--delft-blue);">
                     <option value="">Select Category</option>
                     ${Object.keys(categoryIcons).map(cat => `<option value="${cat}">${cat}</option>`).join('')}
                 </select>
                 </div>
                 <button type="submit" style="
-                background: #764ba2;
-                color: white;
+                background: var(--tickle-me-pink);
+                color: var(--delft-blue);
                 border: none;
                 border-radius: 6px;
                 padding: 0.75rem 1.5rem;
                 font-size: 1rem;
                 font-weight: 600;
                 cursor: pointer;
-                box-shadow: 0 2px 8px rgba(118,75,162,0.10);
+                box-shadow: 0 2px 8px rgba(248, 141, 173, 0.4);
                 transition: background 0.2s;
                 ">Add</button>
             </form>
@@ -295,36 +319,44 @@
             const toggleBtn = document.getElementById('toggleAddLinkForm');
             const addForm = document.getElementById('addLinkForm');
             toggleBtn.addEventListener('click', () => {
-            addForm.style.display = addForm.style.display === 'none' ? 'block' : 'none';
+                addForm.style.display = addForm.style.display === 'none' ? 'block' : 'none';
             });
 
             // Handle form submission
             addForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const title = document.getElementById('newTitle').value.trim();
-            const url = document.getElementById('newUrl').value.trim();
-            const category = document.getElementById('newCategory').value;
+                e.preventDefault();
+                const title = document.getElementById('newTitle').value.trim();
+                const url = document.getElementById('newUrl').value.trim();
+                const category = document.getElementById('newCategory').value;
 
-            if (!title || !url || !category) return;
+                if (!title || !url || !category) return;
 
-            linksData.push({ title, url, category });
-            renderCategories();
+                linksData.push({ title, url, category });
+                saveLinks();
+                renderCategories();
 
-            addForm.reset();
-            addForm.style.display = 'none';
+                addForm.reset();
+                addForm.style.display = 'none';
             });
         });
-        async function loadLinks() {
-            try {
-                linksData = [
 
+        function saveLinks() {
+            localStorage.setItem(LINKS_STORAGE_KEY, JSON.stringify(linksData));
+        }
+
+        async function loadLinks() {
+            const storedLinks = localStorage.getItem(LINKS_STORAGE_KEY);
+            if (storedLinks) {
+                linksData = JSON.parse(storedLinks);
+                renderCategories();
+            } else {
+                // Initial data is now embedded directly
+                linksData = [
                     { "title": "Notion Docs", "url": "https://notion.so", "category": "Documentation" },
                     { "title": "Slack", "url": "https://slack.com", "category": "Communication" }
                 ];
+                saveLinks();
                 renderCategories();
-            } catch (error) {
-                console.error('Error loading links:', error);
-                showError('Failed to load links. Make sure the links.json file is in the same directory as this HTML file.');
             }
         }
 
